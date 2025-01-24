@@ -3,7 +3,7 @@ cd detectron2
 python setup.py build develop
 cd ../
 
-export DETECTRON2_DATASETS=/data/
+export DETECTRON2_DATASETS=/nfs/students/koerner/Datasets/
 
 # ============================= Dual Decision (K% classes are set as unknown) ==========================
 # K=5
