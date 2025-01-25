@@ -80,8 +80,8 @@ _PREDEFINED_SPLITS_COCO["coco_person"] = {
 _PREDEFINED_SPLITS_COCO_PANOPTIC = {
     "coco_2017_train_panoptic": (
         # This is the original panoptic annotation directory
-        "coco/panoptic_train2017",
-        "coco/annotations/panoptic_train2017.json",
+        "Coco/annotations/panoptic_train2017",
+        "Coco/annotations/panoptic_train2017.json",
         # This directory contains semantic annotations that are
         # converted from panoptic annotations.
         # It is used by PanopticFPN.
@@ -89,42 +89,46 @@ _PREDEFINED_SPLITS_COCO_PANOPTIC = {
         # to create these directories.
         # ============= edit by haiming, 20210607 ================
         # "coco/panoptic_stuff_train2017",
-        "coco/panoptic_stuff_train2017_open20",
+        #"coco/panoptic_stuff_train2017_open20",
+        "Coco/annotations/segmentation_train2017",
+    
     ),
-    "coco_2017_train_panoptic_open20_longtail": (
-        # This is the original panoptic annotation directory
-        "coco/panoptic_train2017",
-        "coco/annotations/panoptic_train2017.json",
-        # This directory contains semantic annotations that are
-        # converted from panoptic annotations.
-        # It is used by PanopticFPN.
-        # You can use the script at detectron2/datasets/prepare_panoptic_fpn.py
-        # to create these directories.
-        # ============= edit by haiming, 20210607 ================
-        # "coco/panoptic_stuff_train2017",
-        "coco/panoptic_stuff_train2017_open20_longtail",
-    ),
-    "coco_2017_train_panoptic_origin": (
-        # This is the original panoptic annotation directory
-        "coco/panoptic_train2017",
-        "coco/annotations/panoptic_train2017.json",
-        # This directory contains semantic annotations that are
-        # converted from panoptic annotations.
-        # It is used by PanopticFPN.
-        # You can use the script at detectron2/datasets/prepare_panoptic_fpn.py
-        # to create these directories.
-        # ============= edit by haiming, 20210607 ================
-        "coco/panoptic_stuff_train2017",
-    ),
+
+    # Commented them out, since the paths to the datasets are not there. - Julius 
+    # "coco_2017_train_panoptic_open20_longtail": (
+    #     # This is the original panoptic annotation directory
+    #     "coco/panoptic_train2017",
+    #     "coco/annotations/panoptic_train2017.json",
+    #     # This directory contains semantic annotations that are
+    #     # converted from panoptic annotations.
+    #     # It is used by PanopticFPN.
+    #     # You can use the script at detectron2/datasets/prepare_panoptic_fpn.py
+    #     # to create these directories.
+    #     # ============= edit by haiming, 20210607 ================
+    #     # "coco/panoptic_stuff_train2017",
+    #     "coco/panoptic_stuff_train2017_open20_longtail",
+    # ),
+    # "coco_2017_train_panoptic_origin": (
+    #     # This is the original panoptic annotation directory
+    #     "coco/panoptic_train2017",
+    #     "coco/annotations/panoptic_train2017.json",
+    #     # This directory contains semantic annotations that are
+    #     # converted from panoptic annotations.
+    #     # It is used by PanopticFPN.
+    #     # You can use the script at detectron2/datasets/prepare_panoptic_fpn.py
+    #     # to create these directories.
+    #     # ============= edit by haiming, 20210607 ================
+    #     "coco/panoptic_stuff_train2017",
+    # ),
     "coco_2017_val_panoptic": (
-        "coco/panoptic_val2017",
-        "coco/annotations/panoptic_val2017.json",
-        "coco/panoptic_stuff_val2017",
+        "Coco/annotations/panoptic_val2017",
+        "Coco/annotations/panoptic_val2017.json",
+        "Coco/annotations/segmentation_val2017",
     ),
     "coco_2017_val_100_panoptic": (
-        "coco/panoptic_val2017_100",
-        "coco/annotations/panoptic_val2017_100.json",
-        "coco/panoptic_stuff_val2017_100",
+        "Coco/annotations/panoptic_val2017",
+        "Coco/annotations/panoptic_val2017_100.json",
+        "Coco/annotations/segmentation_val2017",
     ),
 }
 _PREDEFINED_SPLITS_COCO_PANOPTIC_UNSEEN = {
