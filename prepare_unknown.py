@@ -88,14 +88,15 @@ def separate_coco_semantic_from_panoptic(panoptic_json, panoptic_root, sem_seg_r
 
 
 if __name__ == "__main__":
-    dataset_dir = os.path.join(os.getenv("DETECTRON2_DATASETS", "datasets"), "coco")
-    unknown_label_set = [e.replace('\n', '') for e in open('datasets/unknown/unknown_K20.txt', 'r').readlines()]
+    #dataset_dir = os.path.join(os.getenv("DETECTRON2_DATASETS", "datasets"), "coco")
+    dataset_dir = "/nfs/students/koerner/Datasets/Coco2"
+    unknown_label_set = [e.replace('\n', '') for e in open('datasets/unknown/unknown_K20_longtail.txt', 'r').readlines()]
 
 #    for s in ["val2017", "train2017"]:
     for s in ["train2017"]:
         separate_coco_semantic_from_panoptic(
             os.path.join(dataset_dir, "annotations/panoptic_{}.json".format(s)),
-            os.path.join(dataset_dir, "panoptic_{}".format(s)),
+            os.path.join(dataset_dir, "annotations/panoptic_{}".format(s)),
             os.path.join(dataset_dir, "panoptic_stuff_{}".format(s)),
             COCO_CATEGORIES,
             unknown_label_set
@@ -103,7 +104,7 @@ if __name__ == "__main__":
     for s in ["val2017"]:
         separate_coco_semantic_from_panoptic(
             os.path.join(dataset_dir, "annotations/panoptic_{}.json".format(s)),
-            os.path.join(dataset_dir, "panoptic_{}".format(s)),
+            os.path.join(dataset_dir, "annotations/panoptic_{}".format(s)),
             os.path.join(dataset_dir, "panoptic_stuff_{}".format(s)),
             COCO_CATEGORIES,
         )
