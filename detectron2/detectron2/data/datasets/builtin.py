@@ -80,8 +80,8 @@ _PREDEFINED_SPLITS_COCO["coco_person"] = {
 _PREDEFINED_SPLITS_COCO_PANOPTIC = {
     "coco_2017_train_panoptic": (
         # This is the original panoptic annotation directory
-        "Coco/annotations/panoptic_train2017",
-        "Coco/annotations/panoptic_train2017.json",
+        "Coco2/annotations/panoptic_train2017",
+        "Coco2/annotations/panoptic_train2017.json",
         # This directory contains semantic annotations that are
         # converted from panoptic annotations.
         # It is used by PanopticFPN.
@@ -90,7 +90,7 @@ _PREDEFINED_SPLITS_COCO_PANOPTIC = {
         # ============= edit by haiming, 20210607 ================
         # "coco/panoptic_stuff_train2017",
         #"coco/panoptic_stuff_train2017_open20",
-        "Coco/annotations/segmentation_train2017",
+        "Coco2/panoptic_stuff_train2017",
     
     ),
 
@@ -121,34 +121,57 @@ _PREDEFINED_SPLITS_COCO_PANOPTIC = {
     #     "coco/panoptic_stuff_train2017",
     # ),
     "coco_2017_val_panoptic": (
-        "Coco/annotations/panoptic_val2017",
-        "Coco/annotations/panoptic_val2017.json",
-        "Coco/annotations/segmentation_val2017",
+        "Coco2/annotations/panoptic_val2017",
+        "Coco2/annotations/panoptic_val2017.json",
+        "Coco2/panoptic_stuff_val2017",
     ),
     "coco_2017_val_100_panoptic": (
-        "Coco/annotations/panoptic_val2017",
-        "Coco/annotations/panoptic_val2017_100.json",
-        "Coco/annotations/segmentation_val2017",
+        "Coco2/annotations/panoptic_val2017",
+        "Coco2/annotations/panoptic_val2017_100.json",
+        "Coco2/panoptic_stuff_val2017",
     ),
 }
 _PREDEFINED_SPLITS_COCO_PANOPTIC_UNSEEN = {
-    "coco_2017_train_panoptic_unseen1": (
+        "coco_2017_train_panoptic_unseen1": (
         # This is the original panoptic annotation directory
-        "coco/panoptic_train2017",
-        "coco/annotations/panoptic_train2017_unseen1.json",
+        "Coco/panoptic_train2017",
+        "Coco/annotations/anomaly_panoptic_train2017.json",
         # This directory contains semantic annotations that are
         # converted from panoptic annotations.
         # It is used by PanopticFPN.
         # You can use the script at detectron2/datasets/prepare_panoptic_fpn.py
         # to create these directories.
-        "coco/panoptic_stuff_train2017_unseen1",
+        "Coco/annotations/segmentation_train2017",
     ),
     "coco_2017_val_panoptic_unseen1": (
-        "coco/panoptic_val2017_unseen1",
-        "coco/annotations/panoptic_val2017_unseen1.json",
-        "coco/panoptic_stuff_val2017_unseen1",
+        "Coco/panoptic_val2017",
+        "Coco/annotations/anomaly_panoptic_val2017.json",
+        "Coco/annotations/segmentation_val2017",
+    ),
+    "coco_2017_val_100_panoptic_unseen1": (
+        "Coco/panoptic_val2017",
+        "Coco/annotations/anomaly_panoptic_val2017_100.json",
+        "Coco/annotations/segmentation_val2017",
     ),
 }
+# _PREDEFINED_SPLITS_COCO_PANOPTIC_UNSEEN = {
+#     "coco_2017_train_panoptic_unseen1": (
+#         # This is the original panoptic annotation directory
+#         "coco/panoptic_train2017",
+#         "coco/annotations/panoptic_train2017_unseen1.json",
+#         # This directory contains semantic annotations that are
+#         # converted from panoptic annotations.
+#         # It is used by PanopticFPN.
+#         # You can use the script at detectron2/datasets/prepare_panoptic_fpn.py
+#         # to create these directories.
+#         "coco/panoptic_stuff_train2017_unseen1",
+#     ),
+#     "coco_2017_val_panoptic_unseen1": (
+#         "coco/panoptic_val2017_unseen1",
+#         "coco/annotations/panoptic_val2017_unseen1.json",
+#         "coco/panoptic_stuff_val2017_unseen1",
+#     ),
+# }
 
 
 def register_all_coco(root):
@@ -181,7 +204,7 @@ def register_all_coco(root):
             os.path.join(root, panoptic_root),
             os.path.join(root, panoptic_json),
             os.path.join(root, semantic_root),
-            instances_json,
+            instances_json, # instead of instances_json, i think they should be the same
         )
 
     for (
@@ -199,7 +222,7 @@ def register_all_coco(root):
             os.path.join(root, panoptic_root),
             os.path.join(root, panoptic_json),
             os.path.join(root, semantic_root),
-            instances_json,
+            os.path.join(root, panoptic_json), # instead of instances_json, i think they should be the same
         )
 
 
