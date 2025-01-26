@@ -1,6 +1,6 @@
 _BASE_: "Base-Panoptic-FPN.yaml"
 MODEL:
-  WEIGHTS: "checkpoints/R-50.pkl"
+  WEIGHTS: "/nfs/students/koerner/checkpoints/R-50.pkl"
   META_ARCHITECTURE: "PanopticFPN_baseline"
   RESNETS:
     DEPTH: 50
@@ -43,14 +43,14 @@ MODEL:
    PSEUDO_INST_PSEUDO_LABELING: True  # do pseudo-labeling on pseudoInst(heuristic PL)
    PSEUDO_INST_OBJ_CONFIDENCE: 0.9
 SOLVER:
-  IMS_PER_BATCH: 32
+  IMS_PER_BATCH: 2
   STEPS: (30000, 40000)
   MAX_ITER: 45000
   BASE_LR: 0.04
 SEED:  13
 DATASETS:
   ONLINE_PROCESS_UNK: True
-  TRAIN: ("coco_2017_train_panoptic_origin_separated",)
+  TRAIN: ("coco_2017_train_panoptic_separated",)
   TEST: ("coco_2017_val_panoptic_separated",)
   UNSEEN_LABEL_SET: 'datasets/unknown/unknown_K5.txt'
   OPENPS:
