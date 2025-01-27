@@ -327,7 +327,7 @@ class StandardROIHeads_baseline(ROIHeads):
 
         box_predictor = FastRCNNOutputLayers_baseline(cfg, box_head.output_shape, label_converter, reverse_label_converter)
 
-        num_classes_known = min(cfg.MODEL.ROI_HEADS.NUM_CLASSES+1, len(reverse_label_converter))
+        num_classes_known = min(cfg.MODEL.ROI_HEADS.NUM_CLASSES+1, len(reverse_label_converter)) if reverse_label_converter is not None else cfg.MODEL.ROI_HEADS.NUM_CLASSES+1
 
         return {
             "box_in_features": in_features,

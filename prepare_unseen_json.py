@@ -3,13 +3,17 @@ import json
 from tqdm import tqdm
 from detectron2.data.datasets.builtin_meta import COCO_CATEGORIES
 
+# we create the instance json here, so we only need to care about the instance categories
+COCO_CATEGORIES = [c for c in COCO_CATEGORIES if c["isthing"] == 1] 
+
+
 def main():
     instance_json = "/nfs/students/koerner/Datasets/Coco2/annotations/instances_{}.json"
     instance_json_longtail = os.path.join(*instance_json.split("/")[:-1],instance_json.split("/")[-1].replace(".json", "_longtail.json"))
 
     longtail_names = [e.replace('\n', '') for e in open('datasets/unknown/unknown_K20_longtail.txt', 'r').readlines()]
     longtail_ids = [c["id"] for c in COCO_CATEGORIES if c["name"] in longtail_names]
-    s = "val2017"
+
     for s in ["val2017","train2017"]:
         with open(instance_json.format(s), "r") as f:
             data = json.load(f)

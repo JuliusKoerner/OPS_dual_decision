@@ -202,6 +202,38 @@ def _get_coco_instances_meta():
     }
     return ret
 
+def _get_coco_instances_longtail_meta():
+    longtail_names = [
+    "hair drier",
+    "toaster",
+    "parking meter",
+    "bear",
+    "scissors",
+    "microwave",
+    "fire hydrant",
+    "toothbrush",
+    "stop sign",
+    "mouse",
+    "refrigerator",
+    "snowboard",
+    "frisbee",
+    "keyboard",
+    "hot dog",
+    "baseball bat"
+]
+    thing_ids = [k["id"] for k in COCO_CATEGORIES if (k["isthing"] == 1 and k["name"] not in longtail_names)]
+    thing_colors = [k["color"] for k in COCO_CATEGORIES if (k["isthing"] == 1 and k["name"] not in longtail_names)]
+    assert len(thing_ids) == 64, len(thing_ids)
+    # Mapping from the incontiguous COCO category id to an id in [0, 79]
+    thing_dataset_id_to_contiguous_id = {k: i for i, k in enumerate(thing_ids)}
+    thing_classes = [k["name"] for k in COCO_CATEGORIES if (k["isthing"] == 1 and k["name"] not in longtail_names)]
+    ret = {
+        "thing_dataset_id_to_contiguous_id": thing_dataset_id_to_contiguous_id,
+        "thing_classes": thing_classes,
+        "thing_colors": thing_colors,
+    }
+    return ret
+
 
 def _get_coco_panoptic_separated_meta():
     """
@@ -235,12 +267,25 @@ def _get_coco_panoptic_separated_meta():
     ret.update(_get_coco_instances_meta())
     return ret
 
+def _get_coco_panoptic_longtail_separated_meta():
+    """
+    Returns metadata for "separated" version of the panoptic segmentation dataset without the longtail classes.
+    Usually the longtail classes have been held genereric, but here they are hart coded: TODO
+    """
+
+    #keep the stuff related meta data
+    ret = _get_coco_panoptic_separated_meta()
+    for k,v in _get_coco_instances_longtail_meta().items():
+        ret[k] = v
+    return ret
 
 def _get_builtin_metadata(dataset_name):
     if dataset_name == "coco":
         return _get_coco_instances_meta()
     if dataset_name == "coco_panoptic_separated":
         return _get_coco_panoptic_separated_meta()
+    if dataset_name == "coco_panoptic_longtail_separated":
+        return _get_coco_panoptic_longtail_separated_meta()
     elif dataset_name == "coco_person":
         return {
             "thing_classes": ["person"],

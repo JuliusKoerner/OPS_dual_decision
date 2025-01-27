@@ -1,6 +1,6 @@
 _BASE_: "Base-Panoptic-FPN.yaml"
 MODEL:
-  WEIGHTS: "/nfs/students/koerner/checkpoints/R-50.pkl"
+  WEIGHTS: #"/nfs/students/koerner/checkpoints/suppression_K05.pth"
   META_ARCHITECTURE: "PanopticFPN_baseline"
   RESNETS:
     DEPTH: 50
