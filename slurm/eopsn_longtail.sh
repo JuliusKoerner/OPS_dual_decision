@@ -3,8 +3,8 @@
 #SBATCH -N 1                       # Number of nodes
 #SBATCH --gres=gpu:1               # Request  GPUs
 #SBATCH --partition=gpu_h100      # Partition name (adjust if necessary)
-#SBATCH -t 0-09:00                 # Time limit (3 daydef train_tr)
-#SBATCH -o "/nfs/homedirs/koerner/Experiments/slurm_ddops/coco_softmax_beta.out"  # Output file path
+#SBATCH -t 0-15:00                 # Time limit (3 daydef train_tr)
+#SBATCH -o "/nfs/homedirs/koerner/Experiments/slurm_eopsn/eopsn_longtail.out"  # Output file path
 #SBATCH --mem=64000                # CPU memory 
 #SBATCH --qos=deadline              # Quality of service
 #SBATCH --cpus-per-task=15          # Number of CPU cores per task
@@ -26,4 +26,4 @@ cd /nfs/homedirs/koerner/Git/OPS_dual_decision
 
 
 export DETECTRON2_DATASETS=/nfs/students/koerner/Datasets/
-python train_net.py --config-file configs/ours_longtail.yaml --resume --num-gpus 1 DATALOADER.NUM_WORKERS 10 
+python train_net.py --config-file configs/eopsn_K5.yaml --num-gpus 1 DATALOADER.NUM_WORKERS 10 

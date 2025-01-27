@@ -379,7 +379,7 @@ class FastRCNNOutputLayers_eopsn(nn.Module):
 
             mask = torch.logical_and(mask, obj_mask.to(mask.device))
             mask = mask.bool().view(-1)
-            ids = ids.long().view(-1)
+            ids = ids.long().view(-1).to(mask.device)
 
             paths = paths[mask[ids]]
             bbox = bbox[mask[ids]]
