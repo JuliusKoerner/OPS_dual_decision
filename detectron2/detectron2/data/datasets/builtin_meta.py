@@ -226,7 +226,7 @@ def _get_coco_instances_longtail_meta():
     assert len(thing_ids) == 64, len(thing_ids)
     # Mapping from the incontiguous COCO category id to an id in [0, 79]
     thing_dataset_id_to_contiguous_id = {k: i for i, k in enumerate(thing_ids)}
-    thing_classes = [k["name"] for k in COCO_CATEGORIES if (k["isthing"] == 1 and k["name"] not in longtail_names)]
+    thing_classes = [k["name"] for k in COCO_CATEGORIES if (k["isthing"] == 1)]
     ret = {
         "thing_dataset_id_to_contiguous_id": thing_dataset_id_to_contiguous_id,
         "thing_classes": thing_classes,

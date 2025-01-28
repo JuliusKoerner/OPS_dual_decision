@@ -85,6 +85,7 @@ Category ids in annotations are not in [1, #categories]! We'll apply a mapping f
                 )
         id_map = {v: i for i, v in enumerate(cat_ids)}
         meta.thing_dataset_id_to_contiguous_id = id_map
+        id_map[254] = 254 # maps unseen category to itself, need this 
 
     # sort indices for reproducible results
     img_ids = sorted(coco_api.imgs.keys())

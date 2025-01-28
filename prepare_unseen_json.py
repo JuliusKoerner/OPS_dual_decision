@@ -8,6 +8,7 @@ COCO_CATEGORIES = [c for c in COCO_CATEGORIES if c["isthing"] == 1]
 
 
 def main():
+    option = "_all_categories"
     instance_json = "/nfs/students/koerner/Datasets/Coco2/annotations/instances_{}.json"
     instance_json_longtail = os.path.join(*instance_json.split("/")[:-1],instance_json.split("/")[-1].replace(".json", "_longtail.json"))
 
@@ -33,6 +34,7 @@ def main():
         print("splitting annotations into with and without longtail")
         for ann in tqdm(dannos):
             if ann["category_id"] in longtail_ids:
+                ann["category_id"] = 254
                 annos_with_longtail.append(ann)
                 image_ids_with_longtail.add(ann["image_id"])
             else:
@@ -52,17 +54,20 @@ def main():
             elif im["id"] in image_ids_without_longtail:
                 images_without_longtail.append(im)
 
+        # categories_without_longtail are purposefully in with_longtail
         with_longtail =  {"info": data["info"], "licenses": data["licenses"], "images": images_with_longtail,
-                        "annotations": annos_with_longtail, "categories": categories_with_longtail}
+                        "annotations": annos_with_longtail, "categories": categories_without_longtail}
         without_longtail = {"info": data["info"], "licenses": data["licenses"], "images": images_without_longtail,
                         "annotations": annos_without_longtail, "categories": categories_without_longtail}
-
+        if option == "_all_categories":
+            with_longtail["categories"] = COCO_CATEGORIES
+            without_longtail["categories"] = COCO_CATEGORIES
         print("Dumping into json")
         print("The first...")
-        with open(instance_json.format(s).replace(".json", "_with_longtail.json"), "w") as f:
+        with open(instance_json.format(s+option).replace(".json", "_with_longtail.json"), "w") as f:
             json.dump(with_longtail,f)
         print("And the second...")
-        with open(instance_json.format(s).replace(".json", "_without_longtail.json"), "w") as f:
+        with open(instance_json.format(s+option).replace(".json", "_without_longtail.json"), "w") as f:
             json.dump(without_longtail,f)
 
     print("done")

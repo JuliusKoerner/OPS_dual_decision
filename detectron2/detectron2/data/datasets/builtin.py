@@ -240,12 +240,34 @@ def register_all_coco(root):
         instances_meta = MetadataCatalog.get(prefix_instances)
         image_root, instances_json = instances_meta.image_root, instances_meta.json_file
         #instances_json = instances_json.split('.')[0] + '_unseen1' + '.json'
-        instances_json = instances_json.replace(".json", "_without_longtail.json")
+        instances_json = instances_json.replace(".json", "_all_categories_without_longtail.json")
 
         # registers the dataset to the MetadataCatalog
         register_coco_panoptic_separated(
             prefix,
             _get_builtin_metadata("coco_panoptic_longtail_separated"),
+            image_root,
+            os.path.join(root, panoptic_root),
+            os.path.join(root, panoptic_json),
+            os.path.join(root, semantic_root),
+            instances_json, # instead of instances_json, i think they should be the same
+        )
+    
+    for (
+        prefix,
+        (panoptic_root, panoptic_json, semantic_root),
+    ) in _PREDEFINED_SPLITS_COCO_PANOPTIC_WITH_LONGTAIL.items():
+        prefix_instances = prefix[: -len("_panoptic_with_longtail")]
+        instances_meta = MetadataCatalog.get(prefix_instances)
+        image_root, instances_json = instances_meta.image_root, instances_meta.json_file
+        #instances_json = instances_json.split('.')[0] + '_unseen1' + '.json'
+        instances_json = instances_json.replace(".json", "_all_categories_with_longtail.json")
+
+        # registers the dataset to the MetadataCatalog
+        register_coco_panoptic_separated(
+            prefix,
+            #_get_builtin_metadata("coco_panoptic_longtail_separated"),
+            _get_builtin_metadata("coco_panoptic_separated"),
             image_root,
             os.path.join(root, panoptic_root),
             os.path.join(root, panoptic_json),
