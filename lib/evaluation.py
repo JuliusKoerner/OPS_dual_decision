@@ -408,13 +408,21 @@ def pq_compute(gt_json_file, pred_json_file, gt_folder=None, pred_folder=None,
     if not os.path.isdir(pred_folder):
         raise Exception("Folder {} with predicted segmentations doesn't exist".format(pred_folder))
 
-    pred_annotations = {el['image_id']: el for el in pred_json['annotations']}
+    # Reordered the logic here. So now the predicted images can be a subset of the gt images. 
+    # Has the benefit when evaluating subsets the same gt json can be given. 
+    gt_annotations = {el['image_id']: el for el in gt_json['annotations']}
     matched_annotations_list = []
-    for gt_ann in gt_json['annotations']:
-        image_id = gt_ann['image_id']
-        if image_id not in pred_annotations:
-            raise Exception('no prediction for the image with id: {}'.format(image_id))
-        matched_annotations_list.append((gt_ann, pred_annotations[image_id]))
+    for pred in pred_json['annotations']:
+        image_id = pred['image_id']
+        if image_id not in gt_annotations:
+            raise Exception('no ground truth for the image with id: {}'.format(image_id))
+        matched_annotations_list.append((gt_annotations[image_id], pred))
+    # pred_annotations = {el['image_id']: el for el in pred_json['annotations']}
+    # for gt_ann in gt_json['annotations']:
+    #     image_id = gt_ann['image_id']
+    #     if image_id not in pred_annotations:
+    #         raise Exception('no prediction for the image with id: {}'.format(image_id))
+    #     matched_annotations_list.append((gt_ann, pred_annotations[image_id]))
     pq_stat = pq_compute_single_core(0, matched_annotations_list, gt_folder, pred_folder, categories)
     # pq_stat = pq_compute_multi_core(matched_annotations_list, gt_folder, pred_folder, categories)
     # _print_unk_stats(pq_stat, categories)
