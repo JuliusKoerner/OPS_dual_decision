@@ -355,6 +355,7 @@ class COCOPanopticOpenEvaluator(COCOPanopticEvaluator):
             self._metadata.thing_dataset_id_to_contiguous_id = conv_id #{-1:-1}
             with open(cfg.DATASETS.UNSEEN_LABEL_SET, 'r') as f:
                 self.unknown_label_list = [e.replace('\n', '') for e in f.readlines()]
+                self.ignore_in_eval_list = self.unknown_label_list.copy()
             if cfg.DATASETS.TEST_UNSEEN_LABEL_SET != '':
                 with open(cfg.DATASETS.TEST_UNSEEN_LABEL_SET, 'r') as f:
                     self.unknown_label_list += [e.replace('\n', '') for e in f.readlines()]
@@ -421,7 +422,8 @@ class COCOPanopticOpenEvaluator(COCOPanopticEvaluator):
                     PathManager.get_local_path(self._predictions_json),
                     gt_folder=gt_folder,
                     pred_folder=pred_dir,
-                    unknown_label_list=self.unknown_label_list
+                    unknown_label_list=self.unknown_label_list,
+                    ignore_in_eval_list=self.ignore_in_eval_list,
                 )
 
         res = {}

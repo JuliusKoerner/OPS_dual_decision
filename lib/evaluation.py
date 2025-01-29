@@ -91,6 +91,8 @@ class PQStat():
         pq, sq, rq, n = 0, 0, 0, 0
         per_class_results = {}
         for label, label_info in categories.items():
+            if label < 0:
+                pass
             if isthing is not None:
                 cat_isthing = label_info['isthing'] == 1
                 if isthing != cat_isthing:
@@ -104,8 +106,14 @@ class PQStat():
                         continue
                 elif label_info['id'] <= -1: # Known
                     continue
-            elif label_info['id'] < 0:
+            elif isunknown is False: #only filters out unknowns if is unknown is False
+                if label_info['id'] < 0:
+                    continue
+            elif label < -1:
                 continue
+
+            # elif label_info['id'] < 0:
+            #     continue
             iou = self.pq_per_cat[label].iou
             tp = self.pq_per_cat[label].tp
             fp = self.pq_per_cat[label].fp
@@ -123,6 +131,220 @@ class PQStat():
             rq += rq_class
         return {'pq': pq / n, 'sq': sq / n, 'rq': rq / n, 'n': n}, per_class_results
 
+
+@get_traceback
+def pq_compute_single_core_no_unknowns(proc_id, annotation_set, gt_folder, pred_folder, categories, ignore_in_eval_list):
+    pq_stat = PQStat()
+
+    idx = 0
+    for gt_ann, pred_ann in annotation_set:
+        if idx % 100 == 0:
+            print('Core: {}, {} from {} images processed'.format(proc_id, idx, len(annotation_set)))
+        idx += 1
+
+        pan_gt = np.array(Image.open(os.path.join(gt_folder, gt_ann['file_name'])), dtype=np.uint32)
+        pan_gt = rgb2id(pan_gt)
+        pan_pred = np.array(Image.open(os.path.join(pred_folder, pred_ann['file_name'])), dtype=np.uint32)
+        pan_pred = rgb2id(pan_pred)
+
+        gt_segms = {el['id']: el for el in gt_ann['segments_info']}
+        pred_segms = {el['id']: el for el in pred_ann['segments_info']}
+
+        # predicted segments area calculation + prediction sanity checks
+        pred_labels_set = set(el['id'] for el in pred_ann['segments_info'])
+        labels, labels_cnt = np.unique(pan_pred, return_counts=True)
+        for label, label_cnt in zip(labels, labels_cnt):
+            if label not in pred_segms:
+                if label == VOID:
+                    continue
+                raise KeyError('In the image with ID {} segment with ID {} is presented in PNG and not presented in JSON.'.format(gt_ann['image_id'], label))
+            pred_segms[label]['area'] = label_cnt
+            pred_labels_set.remove(label)
+            if pred_segms[label]['category_id'] not in categories:
+                raise KeyError('In the image with ID {} segment with ID {} has unknown category_id {}.'.format(gt_ann['image_id'], label, pred_segms[label]['category_id']))
+        if len(pred_labels_set) != 0:
+            raise KeyError('In the image with ID {} the following segment IDs {} are presented in JSON and not presented in PNG.'.format(gt_ann['image_id'], list(pred_labels_set)))
+
+        # confusion matrix calculation
+        pan_gt_pred = pan_gt.astype(np.uint64) * OFFSET + pan_pred.astype(np.uint64)
+        gt_pred_map = {}
+        labels, labels_cnt = np.unique(pan_gt_pred, return_counts=True)
+        for label, intersection in zip(labels, labels_cnt):
+            gt_id = label // OFFSET
+            pred_id = label % OFFSET
+            gt_pred_map[(gt_id, pred_id)] = intersection
+
+        # count all matched pairs
+        gt_matched = set()
+        pred_matched = set()
+        unk_fn_dict = dict()
+        unk_fp_dict = dict()
+        for label_tuple, intersection in gt_pred_map.items():
+            gt_label, pred_label = label_tuple
+            if gt_label not in gt_segms:
+                continue
+            if pred_label not in pred_segms:
+                continue
+            if gt_segms[gt_label]['iscrowd'] == 1:
+                continue
+            if "original_category_id" in gt_segms[gt_label] and categories[gt_segms[gt_label]['original_category_id']]['name'].replace("unknown_", "") in ignore_in_eval_list:
+                continue
+            if gt_segms[gt_label]['category_id'] != pred_segms[pred_label]['category_id']:
+                # added by haiming, 2021/12/07
+                _union = pred_segms[pred_label]['area'] + gt_segms[gt_label]['area'] - intersection - gt_pred_map.get((VOID, pred_label), 0)
+                _iou = intersection / _union
+                if gt_segms[gt_label]['category_id'] == -1:
+                    gt_cls = categories[gt_segms[gt_label]['original_category_id']]['name']
+                    pred_cls = categories[pred_segms[pred_label]['category_id']]['name']
+                    print(f'gt: {gt_cls}, pred: {pred_cls}')
+                    # if categories[pred_segms[pred_label]['category_id']]['isthing'] == 1:
+                    #     # gt is unk, but pred is konwn-thing
+                    #     pq_stat[gt_segms[gt_label]['original_category_id']].fn_known_th += 1
+                    # else:
+                    #     # gt is unk, but pred is stuff
+                    #     pq_stat[gt_segms[gt_label]['original_category_id']].fn_st += 1
+                    
+                    if gt_segms[gt_label]['original_category_id'] not in unk_fn_dict:
+                        unk_fn_dict[gt_segms[gt_label]['original_category_id']] = dict()    
+                    unk_fn_dict[gt_segms[gt_label]['original_category_id']].update({pred_label: _iou})
+                if pred_segms[pred_label]['category_id'] == -1:
+                    if pred_label not in unk_fp_dict:
+                        unk_fp_dict[pred_label] = dict()
+                    unk_fp_dict[pred_label].update({gt_label: _iou})
+                continue
+
+            union = pred_segms[pred_label]['area'] + gt_segms[gt_label]['area'] - intersection - gt_pred_map.get((VOID, pred_label), 0)
+            iou = intersection / union
+            if iou > 0.5:
+                pq_stat[gt_segms[gt_label]['category_id']].tp += 1
+                pq_stat[gt_segms[gt_label]['category_id']].iou += iou
+                if 'original_category_id' in gt_segms[gt_label]:
+                    pq_stat[gt_segms[gt_label]['original_category_id']].tp += 1
+                    pq_stat[gt_segms[gt_label]['original_category_id']].iou += iou
+                gt_matched.add(gt_label)
+                pred_matched.add(pred_label)
+            else:
+                # added by haiming, 2021/12/07
+                if gt_segms[gt_label]['category_id'] == -1:
+                    gt_cls = categories[gt_segms[gt_label]['original_category_id']]['name']
+                    pred_cls = categories[pred_segms[pred_label]['category_id']]['name']
+                    print(f'gt: {gt_cls}, pred: {pred_cls}, iou: {iou}')
+                    # pq_stat[gt_segms[gt_label]['original_category_id']].fn_unk_lt_iou += 1
+                    
+                    if gt_segms[gt_label]['original_category_id'] not in unk_fn_dict:
+                        unk_fn_dict[gt_segms[gt_label]['original_category_id']] = dict()
+                    unk_fn_dict[gt_segms[gt_label]['original_category_id']].update({pred_label: iou})
+                if pred_segms[pred_label]['category_id'] == -1:
+                    if pred_label not in unk_fp_dict:
+                        unk_fp_dict[pred_label] = dict()
+                    unk_fp_dict[pred_label].update({gt_label: _iou})
+
+        # count false negatives
+        crowd_labels_dict = {}
+        for gt_label, gt_info in gt_segms.items():
+            if gt_label in gt_matched:
+                continue
+            # crowd segments are ignored
+            if gt_info['iscrowd'] == 1:
+                crowd_labels_dict[gt_info['category_id']] = gt_label
+                continue
+            pq_stat[gt_info['category_id']].fn += 1
+            if 'original_category_id' in gt_info:
+                pq_stat[gt_info['original_category_id']].fn += 1
+
+                if gt_info['original_category_id'] in unk_fn_dict:
+                    conver_dict = unk_fn_dict[gt_info['original_category_id']]
+                    conver_list = sorted(conver_dict.items(), key=lambda item: item[1], reverse=True)
+                    _known_th = 0
+                    _known_th_sole_gt05 = 0
+                    _unk = 0
+                    _st = 0
+                    for item in conver_list:
+                        _pred_id, _iou = item
+                        _isthing = categories[pred_segms[_pred_id]['category_id']]['isthing']
+                        _pred_cate = categories[pred_segms[_pred_id]['category_id']]['id']
+                        if _isthing == 1:
+                            if _pred_cate == -1:
+                                _unk += _iou
+                            else:
+                                _known_th += _iou
+                                if _iou > 0.5:
+                                    _known_th_sole_gt05 += 1
+                        else:
+                            _st += _iou
+                    
+                    if _known_th >= _unk and _known_th >= _st:
+                        # if _known_th > 0.5:
+                        #     pq_stat[gt_info['original_category_id']].fn_known_th_gt05 += 1
+                        #     pq_stat[gt_info['category_id']].fn_known_th_gt05 += 1
+                        # else:
+                        #     pq_stat[gt_info['original_category_id']].fn_known_th_lt05 += 1
+                        #     pq_stat[gt_info['category_id']].fn_known_th_lt05 += 1
+                        if _known_th_sole_gt05 > 0:
+                            pq_stat[gt_info['original_category_id']].fn_known_th_sole_gt05 += 1
+                            pq_stat[gt_info['category_id']].fn_known_th_sole_gt05 += 1
+                        else:
+                            pq_stat[gt_info['original_category_id']].fn_known_th_others += 1
+                            pq_stat[gt_info['category_id']].fn_known_th_others += 1
+
+                    elif _unk >= _known_th and _unk >= _st:
+                        pq_stat[gt_info['original_category_id']].fn_unk_lt_iou += 1
+                        pq_stat[gt_info['category_id']].fn_unk_lt_iou += 1
+                    else:
+                        pq_stat[gt_info['original_category_id']].fn_st += 1
+                        pq_stat[gt_info['category_id']].fn_st += 1
+
+        # count false positives
+        for pred_label, pred_info in pred_segms.items():
+            if pred_label in pred_matched:
+                continue
+            # intersection of the segment with VOID
+            intersection = gt_pred_map.get((VOID, pred_label), 0)
+            # plus intersection with corresponding CROWD region if it exists
+            if pred_info['category_id'] in crowd_labels_dict:
+                intersection += gt_pred_map.get((crowd_labels_dict[pred_info['category_id']], pred_label), 0)
+            # predicted segment is ignored if more than half of the segment correspond to VOID and CROWD regions
+            if intersection / pred_info['area'] > 0.5:
+                continue
+            pq_stat[pred_info['category_id']].fp += 1
+
+            if pred_label in unk_fp_dict:
+                conver_dict = unk_fp_dict[pred_label]
+                conver_list = sorted(conver_dict.items(), key=lambda item: item[1], reverse=True)
+                _known_th = 0
+                _known_th_sole_gt05 = 0
+                _unk = 0
+                _st = 0
+                dominate_known_cls = None
+                for item in conver_list:
+                    _gt_id, _iou = item
+                    _isthing = categories[gt_segms[_gt_id]['category_id']]['isthing']
+                    _gt_cate = categories[gt_segms[_gt_id]['category_id']]['id']
+                    if _isthing == 1:
+                        if _gt_cate < 0:
+                            _unk += _iou
+                        else:
+                            _known_th += _iou
+                            if _iou > 0.5:
+                                _known_th_sole_gt05 += 1
+                                if dominate_known_cls is None:
+                                    dominate_known_cls = _gt_cate
+                    else:
+                        _st += _iou
+                
+                if _known_th >= _unk and _known_th >= _st:
+                    if _known_th_sole_gt05 > 0:
+                        pq_stat[pred_info['category_id']].fp_known_th += 1
+                        pq_stat[dominate_known_cls].fp_known_th += 1
+                    else:
+                        pq_stat[pred_info['category_id']].fp_known_th_others += 1
+                        
+                elif _unk >= _known_th and _unk >= _st:
+                    pq_stat[pred_info['category_id']].fp_unk_lt_iou += 1
+                else:
+                    pq_stat[pred_info['category_id']].fp_st += 1
+    print('Core: {}, all {} images processed'.format(proc_id, len(annotation_set)))
+    return pq_stat
 
 @get_traceback
 def pq_compute_single_core(proc_id, annotation_set, gt_folder, pred_folder, categories):
@@ -336,7 +558,6 @@ def pq_compute_single_core(proc_id, annotation_set, gt_folder, pred_folder, cate
     print('Core: {}, all {} images processed'.format(proc_id, len(annotation_set)))
     return pq_stat
 
-
 def pq_compute_multi_core(matched_annotations_list, gt_folder, pred_folder, categories):
     cpu_num = multiprocessing.cpu_count()
     annotations_split = np.array_split(matched_annotations_list, cpu_num)
@@ -355,7 +576,7 @@ def pq_compute_multi_core(matched_annotations_list, gt_folder, pred_folder, cate
 
 
 def pq_compute(gt_json_file, pred_json_file, gt_folder=None, pred_folder=None,
-               unknown_label_list=None):
+               unknown_label_list=None, ignore_in_eval_list=None):
     start_time = time.time()
     with open(gt_json_file, 'r') as f:
         gt_json = json.load(f)
@@ -423,7 +644,8 @@ def pq_compute(gt_json_file, pred_json_file, gt_folder=None, pred_folder=None,
     #     if image_id not in pred_annotations:
     #         raise Exception('no prediction for the image with id: {}'.format(image_id))
     #     matched_annotations_list.append((gt_ann, pred_annotations[image_id]))
-    pq_stat = pq_compute_single_core(0, matched_annotations_list, gt_folder, pred_folder, categories)
+    pq_stat = pq_compute_single_core_no_unknowns(0, matched_annotations_list, gt_folder, pred_folder, categories, ignore_in_eval_list)
+    # pq_stat = pq_compute_single_core(0, matched_annotations_list, gt_folder, pred_folder, categories)
     # pq_stat = pq_compute_multi_core(matched_annotations_list, gt_folder, pred_folder, categories)
     # _print_unk_stats(pq_stat, categories)
     _print_unk_stats_detail(pq_stat, categories)
