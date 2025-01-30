@@ -37,7 +37,7 @@ DATASETS:
   TEST: ("coco_2017_val_100_panoptic_without_longtail_separated",)
   UNSEEN_LABEL_SET: 'datasets/unknown/unknown_K5.txt'
 SOLVER:
-  IMS_PER_BATCH: 2
+  IMS_PER_BATCH: 32
   STEPS: (60000, 80000) # large number
   MAX_ITER: 30000
   BASE_LR: 0.0004
