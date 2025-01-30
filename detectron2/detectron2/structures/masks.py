@@ -29,7 +29,7 @@ def polygons_to_bitmask(polygons: List[np.ndarray], height: int, width: int) -> 
     assert len(polygons) > 0, "COCOAPI does not support empty polygons"
     rles = mask_util.frPyObjects(polygons, height, width)
     rle = mask_util.merge(rles)
-    return mask_util.decode(rle).astype(np.bool)
+    return mask_util.decode(rle).astype(bool)
 
 
 def rasterize_polygons_within_box(
