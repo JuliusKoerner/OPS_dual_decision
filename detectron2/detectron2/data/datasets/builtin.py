@@ -240,7 +240,7 @@ def register_all_coco(root):
         instances_meta = MetadataCatalog.get(prefix_instances)
         image_root, instances_json = instances_meta.image_root, instances_meta.json_file
         #instances_json = instances_json.split('.')[0] + '_unseen1' + '.json'
-        instances_json = instances_json.replace(".json", "_all_categories_without_longtail.json")
+        instances_json = instances_json.replace(".json", "_without_longtail.json")
 
         # registers the dataset to the MetadataCatalog
         register_coco_panoptic_separated(
