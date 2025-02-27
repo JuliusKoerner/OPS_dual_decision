@@ -1,3 +1,4 @@
+#install detectron with cd detectron2; pip install -e .
 cython
 submitit #install
 scipy
