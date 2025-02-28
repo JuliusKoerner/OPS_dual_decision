@@ -20,8 +20,8 @@ squeue -j ${SLURM_JOBID} -O nodelist | tail -n +2
 CONDA_BASE=$(conda info --base)
 echo $CONDA_BASE
 source $CONDA_BASE/etc/profile.d/conda.sh
-conda activate eopsn_script
+conda activate eopsn_h100
 cd /nfs/homedirs/koerner/Git/OPS_dual_decision
 
 export DETECTRON2_DATASETS=/nfs/students/koerner/Datasets/
-python train_net.py --config-file configs/eopsn_K5.yaml --num-gpus 1 DATALOADER.NUM_WORKERS 10 
+python train_net.py --config-file configs/eopsn_K5.yaml --num-gpus 1 DATALOADER.NUM_WORKERS 10
