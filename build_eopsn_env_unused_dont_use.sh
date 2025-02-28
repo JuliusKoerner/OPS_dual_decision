@@ -1,7 +1,6 @@
 #!/bin/bash
-#Works for small gpus on tum
-#installs development cuda toolkit, might need to run the sh make.sh command in mask2former/modelling/pixel_decoder/ops (or similar), for mask2former or p2f to work
-
+#Experimental, does not work yet!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#newest cuda
 # Environment name
 ENV_NAME="eopsn_script"
 
@@ -28,7 +27,7 @@ echo "Installing PyTorch with CUDA  support using pip..."
 pip install torch==2.* torchvision torchaudio --index-url https://download.pytorch.org/whl/cu119
 
 conda install -c nvidia cudatoolkit cudnn
-conda install -c conda-forge cudatoolkit-dev
+conda install -c conda-forge cudatoolkit-dev #conda install -c nvidia -c conda-forge cuda-toolkit to install newer versions of the development kit
 
 
 pip install cython submitit scipy rich shapely pandas wandb seaborn scikit-learn Embeddings2Image 
