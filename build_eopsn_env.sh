@@ -3,7 +3,7 @@
 #installs development cuda toolkit, might need to run the sh make.sh command in mask2former/modelling/pixel_decoder/ops (or similar), for mask2former or p2f to work
 
 # Environment name
-ENV_NAME="eopsn_h100"
+ENV_NAME="eopsn_gpu7"
 
 
 echo "Creating Conda environment: $ENV_NAME"

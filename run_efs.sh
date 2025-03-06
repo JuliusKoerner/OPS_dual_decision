@@ -8,6 +8,10 @@ export DETECTRON2_DATASETS=/nfs/students/koerner/Datasets/
 # ============================= Longtail Classes Unseen + K5 as unknown ==========================
 python train_net.py --config-file configs/ours_longtail.yaml --num-gpus 1 DATALOADER.NUM_WORKERS 5
 # batch-size 5 -> 11.2 GB Gpu
+# ============================= Evaluation =========================================================
+python train_net.py --config configs/eopsn_K5.yaml --num-gpus 1 --resume --eval-only
+python train_net.py --config configs/eopsn_K5_with_longtail.yaml --num-gpus 1 --resume --eval-only
+
 
 # ============================= Dual Decision (K% classes are set as unknown) ==========================
 # K=5

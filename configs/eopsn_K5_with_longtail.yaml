@@ -33,9 +33,10 @@ MODEL:
    COUPLED_OBJ_THRESH: 0.95
    COUPLED_COS_THRESH: 0.15
 DATASETS:
-  TRAIN: ("coco_2017_train_panoptic_without_longtail_separated",)
-  TEST: ("coco_2017_val_panoptic_without_longtail_separated",)
-  UNSEEN_LABEL_SET: 'datasets/unknown/unknown_K5.txt'
+  TRAIN: ("coco_2017_train_panoptic_separated",) #("coco_2017_train_panoptic_without_longtail_separated",)
+  TEST: ("coco_2017_val_panoptic_with_longtail_separated",)
+  TEST_UNSEEN_LABEL_SET: "datasets/unknown/unknown_K20_longtail.txt"
+  UNSEEN_LABEL_SET: "datasets/unknown/unknown_K5.txt"
 SOLVER:
   IMS_PER_BATCH: 16 #16
   STEPS: (60000, 80000) # large number
